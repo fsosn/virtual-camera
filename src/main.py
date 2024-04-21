@@ -113,13 +113,21 @@ while running:
     if keys[pygame.K_LSHIFT]:
         camera.move_down()
     if keys[pygame.K_UP]:
-        camera.rotate("x", 1)
+        camera.rotate_x(1)
     if keys[pygame.K_DOWN]:
-        camera.rotate("x", -1)
+        camera.rotate_x(-1)
     if keys[pygame.K_LEFT]:
-        camera.rotate("y", -1)
+        camera.rotate_y(-1)
     if keys[pygame.K_RIGHT]:
-        camera.rotate("y", 1)
+        camera.rotate_y(1)
+    # if keys[pygame.K_q]:
+    #     camera.rotate_z(-1)
+    # if keys[pygame.K_e]:
+    #     camera.rotate_z(1)
+    if keys[pygame.K_KP_PLUS]:
+        camera.zoom(-1)
+    if keys[pygame.K_KP_MINUS]:
+        camera.zoom(1)
 
     screen.fill(BG_COLOR)
 
