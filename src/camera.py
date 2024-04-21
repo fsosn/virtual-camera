@@ -3,10 +3,11 @@ import math
 
 
 class Camera:
-    def __init__(self, pos=(0, 0, 0), rotation=(0, 0, 0)):
+    def __init__(self, pos=(0, 0, 0), rotation=(0, 0, 0), fov = 60):
         self.pos = np.array(pos, dtype=float)
         self.rotation = np.array(rotation, dtype=float)
         self.move_speed = 5
+        self.fov = fov
 
     def move_forward(self):
         dx = math.sin(math.radians(self.rotation[1])) * self.move_speed
@@ -50,13 +51,20 @@ class Camera:
     def move_down(self):
         self.pos[1] -= self.move_speed
 
-    def rotate(self, axis, angle):
-        if axis == "x":
-            self.rotation[0] += angle
-        elif axis == "y":
-            self.rotation[1] += angle
-        elif axis == "z":
-            self.rotation[2] += angle
+    def rotate_x(self, angle):
+        self.rotation[0] += angle
+
+    def rotate_y(self, angle):
+        self.rotation[1] += angle
+
+    def rotate_z(self, angle):
+        self.rotation[2] += angle
+        
+    def zoom(self, amount):
+        if self.fov+amount < 15 or self.fov+amount > 60:
+            pass
+        else:
+            self.fov += amount
 
     def view_matrix(self):
         rx, ry, rz = np.radians(self.rotation)
@@ -100,6 +108,11 @@ class Camera:
             ]
         )
 
+        # rotation_matrix = np.dot(
+        #     rotation_matrix_z, np.dot(rotation_matrix_y, rotation_matrix_x)
+        # )
+
+        # return np.dot(rotation_matrix, translation_matrix)
         return np.dot(rotation_matrix_x, np.dot(rotation_matrix_y, translation_matrix))
 
     def project(self, point, width, height, fov):
@@ -119,7 +132,7 @@ class Camera:
         aspect_ratio = width / height
         near = 0.1
         far = 1000
-        f = 1 / math.tan(math.radians(fov) / 2)
+        f = 1 / math.tan(math.radians(self.fov) / 2)
 
         return np.array(
             [
