@@ -3,53 +3,53 @@ import math
 
 
 class Camera:
-    def __init__(self, pos=(0, 0, 0), rotation=(0, 0, 0), fov = 60):
+    def __init__(self, pos=(0, 0, 0), rotation=(0, 0, 0), fov=60):
         self.pos = np.array(pos, dtype=float)
         self.rotation = np.array(rotation, dtype=float)
-        self.move_speed = 5
+        self.step_size = 5
         self.fov = fov
 
     def move_forward(self):
-        dx = math.sin(math.radians(self.rotation[1])) * self.move_speed
-        dy = -math.sin(math.radians(self.rotation[0])) * self.move_speed
-        dz = -math.cos(math.radians(self.rotation[1])) * self.move_speed
+        dx = math.sin(math.radians(self.rotation[1])) * self.step_size
+        dy = -math.sin(math.radians(self.rotation[0])) * self.step_size
+        dz = -math.cos(math.radians(self.rotation[1])) * self.step_size
 
         self.pos[0] += dx
         self.pos[1] += dy
         self.pos[2] += dz
 
     def move_backward(self):
-        dx = -math.sin(math.radians(self.rotation[1])) * self.move_speed
-        dy = math.sin(math.radians(self.rotation[0])) * self.move_speed
-        dz = math.cos(math.radians(self.rotation[1])) * self.move_speed
+        dx = -math.sin(math.radians(self.rotation[1])) * self.step_size
+        dy = math.sin(math.radians(self.rotation[0])) * self.step_size
+        dz = math.cos(math.radians(self.rotation[1])) * self.step_size
 
         self.pos[0] += dx
         self.pos[1] += dy
         self.pos[2] += dz
 
     def move_left(self):
-        dx = math.sin(math.radians(self.rotation[1] - 90)) * self.move_speed
+        dx = math.sin(math.radians(self.rotation[1] - 90)) * self.step_size
         dy = 0
-        dz = -math.cos(math.radians(self.rotation[1] - 90)) * self.move_speed
+        dz = -math.cos(math.radians(self.rotation[1] - 90)) * self.step_size
 
         self.pos[0] += dx
         self.pos[1] += dy
         self.pos[2] += dz
 
     def move_right(self):
-        dx = math.sin(math.radians(self.rotation[1] + 90)) * self.move_speed
+        dx = math.sin(math.radians(self.rotation[1] + 90)) * self.step_size
         dy = 0
-        dz = -math.cos(math.radians(self.rotation[1] + 90)) * self.move_speed
+        dz = -math.cos(math.radians(self.rotation[1] + 90)) * self.step_size
 
         self.pos[0] += dx
         self.pos[1] += dy
         self.pos[2] += dz
 
     def move_up(self):
-        self.pos[1] += self.move_speed
+        self.pos[1] += self.step_size
 
     def move_down(self):
-        self.pos[1] -= self.move_speed
+        self.pos[1] -= self.step_size
 
     def rotate_x(self, angle):
         self.rotation[0] += angle
@@ -59,9 +59,9 @@ class Camera:
 
     def rotate_z(self, angle):
         self.rotation[2] += angle
-        
+
     def zoom(self, amount):
-        if self.fov+amount < 15 or self.fov+amount > 60:
+        if self.fov + amount < 15 or self.fov + amount > 60:
             pass
         else:
             self.fov += amount
@@ -108,19 +108,20 @@ class Camera:
             ]
         )
 
-        # rotation_matrix = np.dot(
-        #     rotation_matrix_z, np.dot(rotation_matrix_y, rotation_matrix_x)
-        # )
+        return np.dot(
+            rotation_matrix_z,
+            np.dot(rotation_matrix_x, np.dot(rotation_matrix_y, translation_matrix)),
+        )
 
-        # return np.dot(rotation_matrix, translation_matrix)
-        return np.dot(rotation_matrix_x, np.dot(rotation_matrix_y, translation_matrix))
-
-    def project(self, point, width, height, fov):
+    def project(self, point, width, height):
         view_matrix = self.view_matrix()
-        projection_matrix = self.perspective_projection(width, height, fov)
+        projection_matrix = self.perspective_projection(width, height)
         point = np.dot(
             projection_matrix, np.dot(view_matrix, np.array(point + (1,), dtype=float))
         )
+
+        if point[2] <= 0:
+            return None
 
         if point[3] != 0:
             point /= point[3]
@@ -128,9 +129,9 @@ class Camera:
         x, y = point[:2]
         return np.array([width / 2 + x * width / 2, height / 2 + y * height / 2])
 
-    def perspective_projection(self, width, height, fov):
+    def perspective_projection(self, width, height):
         aspect_ratio = width / height
-        near = 0.1
+        near = 1
         far = 1000
         f = 1 / math.tan(math.radians(self.fov) / 2)
 

@@ -6,6 +6,6 @@ class Scene:
     def add_object(self, obj):
         self.objects.append(obj)
 
-    def draw(self, screen, width, height, fov):
+    def draw(self, screen, width, height):
         for obj in self.objects:
-            obj.draw(screen, self.camera, width, height, fov)
+            obj.draw(screen, self.camera, width, height)
